@@ -7,6 +7,16 @@ export default defineConfig(({ mode }) => {
 
   return {
     base: "/my-love/",
+    build: {
+      rollupOptions: {
+        output: {
+          // GitHub Pages/CDN às vezes falham com espaços e () nos paths dos assets.
+          sanitizeFileName(name: string) {
+            return name.replace(/[^a-zA-Z0-9._-]/g, "_");
+          },
+        },
+      },
+    },
     server: {
       port: 5173,
       strictPort: true,

@@ -26,6 +26,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+      - name: Verificar artefatos
+        run: test -f dist/index.html && test -f dist/favicon.ico && test "$(find dist/assets -name '*.jpg' 2>/dev/null | wc -l)" -gt 20
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
