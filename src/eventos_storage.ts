@@ -16,7 +16,17 @@ export function parseStoredEventos(raw: string | null, seed: Evento[]): Evento[]
 }
 
 export function loadEventos(): Evento[] {
-  return parseStoredEventos(localStorage.getItem(STORAGE_KEY), seedEventos);
+  return parseStoredEventos(localStorage.getItem(STORAGE_KEY), seedEventos).map((e) => {
+    const ex = e as Evento & { horario?: unknown; tzone?: unknown };
+    const horario =
+      typeof ex.horario === "string" && ex.horario.trim() !== ""
+        ? ex.horario.trim()
+        : null;
+    const tz = ex.tzone;
+    const tzone =
+      typeof tz === "number" && Number.isFinite(tz) ? tz : null;
+    return { ...(e as Evento), horario, tzone };
+  });
 }
 
 export function persistEventos(eventos: Evento[]) {

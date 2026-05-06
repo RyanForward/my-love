@@ -44,6 +44,7 @@ export function renderCadastroOutlet(outlet: HTMLElement) {
 
   const titulo = inputRow("Título", "text", "titulo", true);
   const dataEv = inputRow("Data", "date", "data", true);
+  const horaEv = inputRow("Horário", "time", "horario", false);
   const desc = textareaRow("Descrição", "descricao");
 
   const imgWrap = document.createElement("div");
@@ -111,6 +112,20 @@ export function renderCadastroOutlet(outlet: HTMLElement) {
   lngIn.placeholder = "-46.633308";
   lngWrap.append(lngLbl, lngIn);
 
+  const tzoneWrap = document.createElement("div");
+  tzoneWrap.className = "formRow";
+  const tzoneLbl = document.createElement("label");
+  tzoneLbl.htmlFor = "tzone";
+  tzoneLbl.textContent = "Fuso UTC (opcional, ex.: -3 ou 5.5)";
+  const tzoneIn = document.createElement("input");
+  tzoneIn.type = "number";
+  tzoneIn.id = "tzone";
+  tzoneIn.step = "0.25";
+  tzoneIn.min = "-12";
+  tzoneIn.max = "14";
+  tzoneIn.placeholder = "deixe vazio = fuso do navegador";
+  tzoneWrap.append(tzoneLbl, tzoneIn);
+
   const actions = document.createElement("div");
   actions.className = "formActions";
   const submitBtn = document.createElement("button");
@@ -126,6 +141,7 @@ export function renderCadastroOutlet(outlet: HTMLElement) {
   form.append(
     titulo.row,
     dataEv.row,
+    horaEv.row,
     desc.row,
     imgWrap,
     urlWrap,
@@ -136,6 +152,7 @@ export function renderCadastroOutlet(outlet: HTMLElement) {
     mapEl,
     latWrap,
     lngWrap,
+    tzoneWrap,
     actions,
   );
 
@@ -240,13 +257,22 @@ export function renderCadastroOutlet(outlet: HTMLElement) {
     }
 
     const coords = parseCoords();
+    const horarioRaw = horaEv.input.value.trim();
+    const tzRaw = tzoneIn.value.trim().replace(",", ".");
+    let tzone: number | null = null;
+    if (tzRaw !== "") {
+      const n = Number(tzRaw);
+      if (Number.isFinite(n)) tzone = n;
+    }
     appendEvento({
       titulo: t,
       descricao: dc,
       data: d,
+      horario: horarioRaw || null,
       imagemUrl,
       latitude: coords ? coords.lat : null,
       longitude: coords ? coords.lng : null,
+      tzone,
     });
 
     location.hash = "#/eventos";

@@ -1,10 +1,26 @@
+import { eventoToWesternHoroscopePayload, fetchWesternHoroscope } from "./astrology_api";
+import { eventDatetimeAttr, formatEventDateTime } from "./eventos_display";
 import { loadEventos, removeEventoById } from "./eventos_storage";
 import type { Evento } from "./eventos_types";
 
-function formatEventDate(isoDate: string): string {
-  const raw = isoDate.includes("T") ? isoDate : `${isoDate}T12:00:00`;
-  const d = new Date(raw);
-  return Number.isFinite(d.getTime()) ? d.toLocaleDateString("pt-BR") : isoDate;
+function openHoroscopeDialog(titulo: string, data: unknown) {
+  const dlg = document.createElement("dialog");
+  dlg.className = "horoscopeDialog";
+  const h = document.createElement("h3");
+  h.className = "horoscopeDialog__title";
+  h.textContent = `Mapa astral — ${titulo}`;
+  const pre = document.createElement("pre");
+  pre.className = "horoscopeDialog__json";
+  pre.textContent = JSON.stringify(data, null, 2);
+  const closeBtn = document.createElement("button");
+  closeBtn.type = "button";
+  closeBtn.textContent = "Fechar";
+  closeBtn.className = "btnPrimary horoscopeDialog__close";
+  closeBtn.addEventListener("click", () => dlg.close());
+  dlg.addEventListener("close", () => dlg.remove());
+  dlg.append(h, pre, closeBtn);
+  document.body.appendChild(dlg);
+  dlg.showModal();
 }
 
 export function renderEventosOutlet(outlet: HTMLElement) {
@@ -38,7 +54,12 @@ export function renderEventosOutlet(outlet: HTMLElement) {
     empty.textContent = "Nenhum evento ainda. Use Cadastrar evento para adicionar.";
     list.appendChild(empty);
   } else {
-    const sorted = [...eventos].sort((a, b) => (a.data < b.data ? 1 : a.data > b.data ? -1 : 0));
+    const sorted = [...eventos].sort((a, b) => {
+      if (a.data !== b.data) return a.data < b.data ? 1 : -1;
+      const ta = a.horario ?? "";
+      const tb = b.horario ?? "";
+      return tb.localeCompare(ta);
+    });
     for (const ev of sorted) {
       list.appendChild(eventCard(ev, () => renderEventosOutlet(outlet)));
     }
@@ -69,8 +90,8 @@ function eventCard(ev: Evento, onDeleted: () => void): HTMLElement {
 
   const date = document.createElement("time");
   date.className = "eventCard__date";
-  date.dateTime = ev.data;
-  date.textContent = formatEventDate(ev.data);
+  date.dateTime = eventDatetimeAttr(ev);
+  date.textContent = formatEventDateTime(ev);
 
   const desc = document.createElement("p");
   desc.className = "eventCard__desc";
@@ -87,6 +108,33 @@ function eventCard(ev: Evento, onDeleted: () => void): HTMLElement {
 
   const rowActions = document.createElement("div");
   rowActions.className = "eventCard__actions";
+
+  const chartBtn = document.createElement("button");
+  chartBtn.type = "button";
+  chartBtn.className = "eventCard__chart";
+  chartBtn.textContent = "Mapa astral";
+  const canChart = ev.latitude != null && ev.longitude != null;
+  chartBtn.disabled = !canChart;
+  chartBtn.title = canChart
+    ? "Buscar mapa na AstrologyAPI"
+    : "Cadastre latitude e longitude para usar a API";
+  chartBtn.addEventListener("click", async () => {
+    const payload = eventoToWesternHoroscopePayload(ev);
+    if (!payload) return;
+    chartBtn.disabled = true;
+    const prev = chartBtn.textContent;
+    chartBtn.textContent = "Carregando…";
+    try {
+      const data = await fetchWesternHoroscope(payload);
+      openHoroscopeDialog(ev.titulo, data);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : String(err));
+    } finally {
+      chartBtn.disabled = !canChart;
+      chartBtn.textContent = prev ?? "Mapa astral";
+    }
+  });
+
   const delBtn = document.createElement("button");
   delBtn.type = "button";
   delBtn.className = "eventCard__delete";
@@ -96,7 +144,8 @@ function eventCard(ev: Evento, onDeleted: () => void): HTMLElement {
     removeEventoById(ev.id);
     onDeleted();
   });
-  rowActions.appendChild(delBtn);
+
+  rowActions.append(chartBtn, delBtn);
   body.appendChild(rowActions);
 
   card.appendChild(body);

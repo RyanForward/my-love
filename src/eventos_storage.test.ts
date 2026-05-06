@@ -8,9 +8,11 @@ const seed: Evento[] = [
     titulo: "Seed",
     descricao: "",
     data: "2026-01-01",
+    horario: null,
     imagemUrl: null,
     latitude: null,
     longitude: null,
+    tzone: null,
     criadoEm: "2026-01-01T00:00:00.000Z",
   },
 ];
