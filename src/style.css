@@ -394,7 +394,7 @@ body {
 }
 
 .horoscopeDialog {
-  max-width: min(720px, calc(100vw - 32px));
+  max-width: min(920px, calc(100vw - 24px));
   width: 100%;
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 16px;
@@ -408,9 +408,179 @@ body {
   font-size: 1.1rem;
 }
 
-.horoscopeDialog__json {
+.horoscopeDialog__body {
   margin: 0 0 14px;
-  max-height: min(60vh, 480px);
+  max-height: min(68vh, 560px);
+  overflow: auto;
+  padding-right: 4px;
+  scrollbar-gutter: stable;
+}
+
+.horoscopeSection {
+  margin-bottom: 18px;
+}
+
+.horoscopeSection:last-of-type {
+  margin-bottom: 12px;
+}
+
+.horoscopeSection__title {
+  margin: 0 0 10px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(200, 185, 255, 0.85);
+}
+
+.horoscopeAngles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+.horoscopeAngleCard {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(140, 120, 220, 0.35);
+  background: linear-gradient(145deg, rgba(45, 32, 78, 0.55), rgba(18, 14, 28, 0.85));
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.horoscopeAngleCard__label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.horoscopeAngleCard__value {
+  font-size: 15px;
+  font-weight: 600;
+  color: #f2ecff;
+  line-height: 1.35;
+}
+
+.horoscopeTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.horoscopeTh {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.62);
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.horoscopeTd {
+  padding: 9px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  vertical-align: middle;
+}
+
+.horoscopeTd--mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  color: rgba(230, 224, 255, 0.92);
+}
+
+.horoscopeTd--muted {
+  text-align: center;
+  color: rgba(255, 200, 120, 0.85);
+  font-size: 14px;
+}
+
+.horoscopeTable tbody tr:hover .horoscopeTd {
+  background: rgba(120, 90, 200, 0.08);
+}
+
+.horoscopeAspects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.horoscopeAspect {
+  padding: 8px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(20, 18, 32, 0.9);
+  font-size: 12px;
+  line-height: 1.35;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 100%;
+}
+
+.horoscopeAspect__main {
+  color: var(--text);
+}
+
+.horoscopeAspect__orb {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.48);
+}
+
+.horoscopeAspect--conj {
+  border-color: rgba(255, 215, 120, 0.35);
+  background: rgba(80, 55, 20, 0.35);
+}
+
+.horoscopeAspect--opp {
+  border-color: rgba(255, 140, 160, 0.35);
+  background: rgba(70, 22, 35, 0.35);
+}
+
+.horoscopeAspect--tri {
+  border-color: rgba(120, 220, 160, 0.3);
+  background: rgba(22, 55, 40, 0.35);
+}
+
+.horoscopeAspect--squ {
+  border-color: rgba(255, 150, 90, 0.35);
+  background: rgba(70, 35, 18, 0.38);
+}
+
+.horoscopeAspect--sex {
+  border-color: rgba(130, 180, 255, 0.35);
+  background: rgba(25, 40, 70, 0.38);
+}
+
+.horoscopeAspect--oth {
+  border-color: rgba(200, 200, 255, 0.2);
+}
+
+.horoscopeRaw {
+  margin-top: 8px;
+  border-radius: 10px;
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+  padding: 8px 10px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.horoscopeRaw__summary {
+  cursor: pointer;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.55);
+  user-select: none;
+}
+
+.horoscopeRaw__summary:hover {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.horoscopeDialog__json {
+  margin: 8px 0 0;
+  max-height: min(36vh, 280px);
   overflow: auto;
   padding: 12px;
   border-radius: 10px;
@@ -419,6 +589,10 @@ body {
   line-height: 1.4;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.horoscopeDialog__json--nested {
+  margin-top: 10px;
 }
 
 .horoscopeDialog__close {

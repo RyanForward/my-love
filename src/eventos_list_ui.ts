@@ -2,6 +2,7 @@ import { eventoToWesternHoroscopePayload, fetchWesternHoroscope } from "./astrol
 import { eventDatetimeAttr, formatEventDateTime } from "./eventos_display";
 import { loadEventos, removeEventoById } from "./eventos_storage";
 import type { Evento } from "./eventos_types";
+import { appendWesternHoroscopeView } from "./western_horoscope_render";
 
 function openHoroscopeDialog(titulo: string, data: unknown) {
   const dlg = document.createElement("dialog");
@@ -9,16 +10,22 @@ function openHoroscopeDialog(titulo: string, data: unknown) {
   const h = document.createElement("h3");
   h.className = "horoscopeDialog__title";
   h.textContent = `Mapa astral — ${titulo}`;
-  const pre = document.createElement("pre");
-  pre.className = "horoscopeDialog__json";
-  pre.textContent = JSON.stringify(data, null, 2);
+  const body = document.createElement("div");
+  body.className = "horoscopeDialog__body";
+  const structured = appendWesternHoroscopeView(body, data);
+  if (!structured) {
+    const pre = document.createElement("pre");
+    pre.className = "horoscopeDialog__json";
+    pre.textContent = JSON.stringify(data, null, 2);
+    body.appendChild(pre);
+  }
   const closeBtn = document.createElement("button");
   closeBtn.type = "button";
   closeBtn.textContent = "Fechar";
   closeBtn.className = "btnPrimary horoscopeDialog__close";
   closeBtn.addEventListener("click", () => dlg.close());
   dlg.addEventListener("close", () => dlg.remove());
-  dlg.append(h, pre, closeBtn);
+  dlg.append(h, body, closeBtn);
   document.body.appendChild(dlg);
   dlg.showModal();
 }
