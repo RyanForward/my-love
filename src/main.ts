@@ -1,7 +1,10 @@
 import "./style.css";
 import frases from "./frases_amor_verdadeiro.json";
 import { pickDifferentIndex, shuffle } from "./rng";
+import { routeFromHash, type AppRoute } from "./route";
+import { renderEventosOutlet } from "./eventos_list_ui";
 
+type MenubarKey = "home" | "eventos";
 type Frase = { autor: string; frase: string };
 
 const LAST_INDEX_KEY = "love:lastFraseIndex:v1";
@@ -15,6 +18,29 @@ function readLastIndex(): number | null {
 
 function writeLastIndex(n: number) {
   localStorage.setItem(LAST_INDEX_KEY, String(n));
+}
+
+const frasesTyped = frases as Frase[];
+const chosenPhrase: Frase =
+  frasesTyped.length > 0
+    ? (() => {
+        const last = readLastIndex();
+        const idx = pickDifferentIndex(last, frasesTyped.length);
+        writeLastIndex(idx);
+        return frasesTyped[idx];
+      })()
+    : { autor: "", frase: "" };
+
+let cadastroMod: typeof import("./eventos_cadastro_ui") | undefined;
+
+function showFatalError(mount: HTMLElement, err: unknown) {
+  mount.innerHTML = "";
+  const box = document.createElement("div");
+  box.className = "fatalError";
+  const msg = err instanceof Error ? `${err.message}\n\n${err.stack ?? ""}` : String(err);
+  box.innerHTML = "<p><strong>Erro ao carregar.</strong></p><pre></pre>";
+  box.querySelector("pre")!.textContent = msg;
+  mount.appendChild(box);
 }
 
 function loadImageUrls(): string[] {
@@ -89,40 +115,120 @@ function createTickerBackground(root: HTMLElement, imageUrls: string[]) {
   root.appendChild(bg);
 }
 
-function render() {
-  const app = document.querySelector<HTMLDivElement>("#app");
-  if (!app) throw new Error("Missing #app");
-  app.innerHTML = "";
+function createMenubar(): { header: HTMLElement; links: Record<MenubarKey, HTMLAnchorElement> } {
+  const header = document.createElement("header");
+  header.className = "siteNav";
 
-  const imageUrls = loadImageUrls();
-  createTickerBackground(app, imageUrls);
+  const nav = document.createElement("nav");
+  nav.className = "menubar";
+  nav.setAttribute("aria-label", "Principal");
 
-  const frasesTyped = frases as Frase[];
-  const last = readLastIndex();
-  const idx = pickDifferentIndex(last, frasesTyped.length);
-  writeLastIndex(idx);
-  const chosen = frasesTyped[idx];
+  const linkHome = document.createElement("a");
+  linkHome.href = "#/";
+  linkHome.textContent = "Página Inicial";
 
-  const content = document.createElement("main");
-  content.className = "content";
+  const linkEvents = document.createElement("a");
+  linkEvents.href = "#/eventos";
+  linkEvents.textContent = "Nossos eventos";
+
+  nav.append(linkHome, linkEvents);
+  header.appendChild(nav);
+
+  return { header, links: { home: linkHome, eventos: linkEvents } };
+}
+
+function updateMenubarActive(route: AppRoute, links: Record<MenubarKey, HTMLAnchorElement>) {
+  const activeHome = route === "home";
+  const activeEventos = route === "eventos" || route === "eventos_cadastro";
+
+  if (activeHome) {
+    links.home.setAttribute("aria-current", "page");
+    links.home.classList.add("menubar__link--active");
+  } else {
+    links.home.removeAttribute("aria-current");
+    links.home.classList.remove("menubar__link--active");
+  }
+
+  if (activeEventos) {
+    links.eventos.setAttribute("aria-current", "page");
+    links.eventos.classList.add("menubar__link--active");
+  } else {
+    links.eventos.removeAttribute("aria-current");
+    links.eventos.classList.remove("menubar__link--active");
+  }
+}
+
+function renderHomeOutlet(outlet: HTMLElement) {
+  outlet.innerHTML = "";
+  outlet.className = "scene scene--home";
+
+  const wrap = document.createElement("div");
+  wrap.className = "sceneCenter";
 
   const card = document.createElement("section");
   card.className = "card";
 
   const quote = document.createElement("p");
   quote.className = "quote";
-  quote.textContent = `“${chosen.frase}”`;
+  quote.textContent = `“${chosenPhrase.frase}”`;
 
   const author = document.createElement("p");
   author.className = "author";
-  author.textContent = `~ ${chosen.autor}`;
+  author.textContent = `~ ${chosenPhrase.autor}`;
 
-  card.appendChild(quote);
-  card.appendChild(author);
+  card.append(quote, author);
+  wrap.appendChild(card);
+  outlet.appendChild(wrap);
+}
 
-  content.appendChild(card);
-  app.appendChild(content);
+async function syncRoute(outlet: HTMLElement, links: Record<MenubarKey, HTMLAnchorElement>) {
+  const route = routeFromHash(location.hash);
+
+  if (route !== "eventos_cadastro" && cadastroMod) {
+    cadastroMod.teardownCadastroMap();
+    cadastroMod = undefined;
+  }
+
+  if (route === "home") renderHomeOutlet(outlet);
+  else if (route === "eventos") renderEventosOutlet(outlet);
+  else {
+    cadastroMod = await import("./eventos_cadastro_ui");
+    cadastroMod.renderCadastroOutlet(outlet);
+  }
+
+  updateMenubarActive(route, links);
+}
+
+function render() {
+  const app = document.querySelector<HTMLDivElement>("#app");
+  if (!app) throw new Error("Missing #app");
+
+  try {
+    app.innerHTML = "";
+
+    const imageUrls = loadImageUrls();
+    createTickerBackground(app, imageUrls);
+
+    const { header: siteNav, links } = createMenubar();
+    app.appendChild(siteNav);
+
+    const outlet = document.createElement("main");
+    outlet.className = "scene";
+    outlet.id = "sceneOutlet";
+    app.appendChild(outlet);
+
+    const runSync = () => {
+      void syncRoute(outlet, links).catch((e) => showFatalError(outlet, e));
+    };
+    window.addEventListener("hashchange", runSync);
+
+    if (!location.hash || location.hash === "#") {
+      history.replaceState(null, "", `${location.pathname}${location.search}#/`);
+    }
+    runSync();
+  } catch (e) {
+    showFatalError(app, e);
+  }
 }
 
 render();
-
