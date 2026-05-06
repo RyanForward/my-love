@@ -1,6 +1,6 @@
 import "./style.css";
 import frases from "./frases_amor_verdadeiro.json";
-import { pickDifferentIndex } from "./rng";
+import { pickDifferentIndex, shuffle } from "./rng";
 
 type Frase = { autor: string; frase: string };
 
@@ -26,8 +26,7 @@ function loadImageUrls(): string[] {
 
   return Object.entries(modules)
     .filter(([path]) => !/the-real-lovers/i.test(path))
-    .map(([, url]) => url)
-    .sort((a, b) => a.localeCompare(b));
+    .map(([, url]) => url);
 }
 
 function createTickerBackground(root: HTMLElement, imageUrls: string[]) {
@@ -54,8 +53,9 @@ function createTickerBackground(root: HTMLElement, imageUrls: string[]) {
     const urls = imageUrls.length ? imageUrls : [];
     const base: string[] = [];
     if (urls.length) {
+      const pool = shuffle(urls);
       for (let i = 0; i < tilesPerHalf; i++) {
-        base.push(urls[(i + r * 3) % urls.length]);
+        base.push(pool[i % pool.length]);
       }
     }
     const tiles = base.length ? [...base, ...base] : [];
