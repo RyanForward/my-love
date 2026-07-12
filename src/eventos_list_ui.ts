@@ -30,7 +30,7 @@ function openHoroscopeDialog(titulo: string, data: unknown) {
   dlg.showModal();
 }
 
-export function renderEventosOutlet(outlet: HTMLElement) {
+export async function renderEventosOutlet(outlet: HTMLElement) {
   outlet.innerHTML = "";
   outlet.className = "scene scene--eventos";
 
@@ -53,8 +53,27 @@ export function renderEventosOutlet(outlet: HTMLElement) {
 
   const list = document.createElement("div");
   list.className = "eventsList";
+  const loading = document.createElement("p");
+  loading.className = "eventsIntro";
+  loading.textContent = "Carregando eventos…";
+  list.appendChild(loading);
 
-  const eventos = loadEventos();
+  wrap.append(headRow, list);
+  outlet.appendChild(wrap);
+
+  let eventos: Evento[];
+  try {
+    eventos = await loadEventos();
+  } catch (err) {
+    list.innerHTML = "";
+    const errMsg = document.createElement("p");
+    errMsg.className = "eventsIntro";
+    errMsg.textContent = `Erro ao carregar eventos: ${err instanceof Error ? err.message : String(err)}`;
+    list.appendChild(errMsg);
+    return;
+  }
+
+  list.innerHTML = "";
   if (!eventos.length) {
     const empty = document.createElement("p");
     empty.className = "eventsIntro";
@@ -68,12 +87,9 @@ export function renderEventosOutlet(outlet: HTMLElement) {
       return tb.localeCompare(ta);
     });
     for (const ev of sorted) {
-      list.appendChild(eventCard(ev, () => renderEventosOutlet(outlet)));
+      list.appendChild(eventCard(ev, () => void renderEventosOutlet(outlet)));
     }
   }
-
-  wrap.append(headRow, list);
-  outlet.appendChild(wrap);
 }
 
 function eventCard(ev: Evento, onDeleted: () => void): HTMLElement {
@@ -146,10 +162,16 @@ function eventCard(ev: Evento, onDeleted: () => void): HTMLElement {
   delBtn.type = "button";
   delBtn.className = "eventCard__delete";
   delBtn.textContent = "Deletar evento";
-  delBtn.addEventListener("click", () => {
+  delBtn.addEventListener("click", async () => {
     if (!confirm("Deletar este evento?")) return;
-    removeEventoById(ev.id);
-    onDeleted();
+    delBtn.disabled = true;
+    try {
+      await removeEventoById(ev.id);
+      onDeleted();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : String(err));
+      delBtn.disabled = false;
+    }
   });
 
   rowActions.append(chartBtn, delBtn);

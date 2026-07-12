@@ -264,18 +264,24 @@ export function renderCadastroOutlet(outlet: HTMLElement) {
       const n = Number(tzRaw);
       if (Number.isFinite(n)) tzone = n;
     }
-    appendEvento({
-      titulo: t,
-      descricao: dc,
-      data: d,
-      horario: horarioRaw || null,
-      imagemUrl,
-      latitude: coords ? coords.lat : null,
-      longitude: coords ? coords.lng : null,
-      tzone,
-    });
 
-    location.hash = "#/eventos";
+    submitBtn.disabled = true;
+    try {
+      await appendEvento({
+        titulo: t,
+        descricao: dc,
+        data: d,
+        horario: horarioRaw || null,
+        imagemUrl,
+        latitude: coords ? coords.lat : null,
+        longitude: coords ? coords.lng : null,
+        tzone,
+      });
+      location.hash = "#/eventos";
+    } catch (err) {
+      alert(err instanceof Error ? err.message : String(err));
+      submitBtn.disabled = false;
+    }
   });
 }
 

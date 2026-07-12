@@ -190,7 +190,7 @@ async function syncRoute(outlet: HTMLElement, links: Record<MenubarKey, HTMLAnch
   }
 
   if (route === "home") renderHomeOutlet(outlet);
-  else if (route === "eventos") renderEventosOutlet(outlet);
+  else if (route === "eventos") await renderEventosOutlet(outlet);
   else {
     cadastroMod = await import("./eventos_cadastro_ui");
     cadastroMod.renderCadastroOutlet(outlet);
