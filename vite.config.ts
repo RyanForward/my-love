@@ -2,8 +2,8 @@ import { defineConfig, loadEnv } from "vite";
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
-  const astrologyUserId = env.ASTROLOGY_USER_ID ?? "";
-  const astrologyKey = env.ASTROLOGY_API_KEY ?? "";
+  const astrologyUserId = env.VITE_ASTROLOGY_USER_ID ?? "";
+  const astrologyKey = env.VITE_ASTROLOGY_API_KEY ?? "";
 
   return {
     base: "/my-love/",
