@@ -1,5 +1,6 @@
 import { eventoToWesternHoroscopePayload, fetchWesternHoroscope } from "./astrology_api";
 import { eventDatetimeAttr, formatEventDateTime } from "./eventos_display";
+import { checarSenha, isUnlocked, senhaConfigurada, unlock } from "./eventos_auth";
 import { loadEventos, removeEventoById } from "./eventos_storage";
 import type { Evento } from "./eventos_types";
 import { appendWesternHoroscopeView } from "./western_horoscope_render";
@@ -163,6 +164,19 @@ function eventCard(ev: Evento, onDeleted: () => void): HTMLElement {
   delBtn.className = "eventCard__delete";
   delBtn.textContent = "Deletar evento";
   delBtn.addEventListener("click", async () => {
+    if (!senhaConfigurada()) {
+      alert("Defina VITE_EVENTOS_PASSWORD nas variáveis de ambiente para habilitar a exclusão.");
+      return;
+    }
+    if (!isUnlocked()) {
+      const senha = prompt("Senha para deletar o evento:");
+      if (senha === null) return;
+      if (!checarSenha(senha)) {
+        alert("Senha incorreta.");
+        return;
+      }
+      unlock();
+    }
     if (!confirm("Deletar este evento?")) return;
     delBtn.disabled = true;
     try {

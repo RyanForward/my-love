@@ -4,6 +4,7 @@ import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import { appendEvento } from "./eventos_storage";
+import { checarSenha, isUnlocked, senhaConfigurada, unlock } from "./eventos_auth";
 
 delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: string })._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -26,13 +27,6 @@ function readFileAsDataURL(file: File): Promise<string> {
     fr.onerror = () => reject(fr.error);
     fr.readAsDataURL(file);
   });
-}
-
-const CADASTRO_SENHA = String(import.meta.env.VITE_EVENTOS_PASSWORD ?? "").trim();
-const UNLOCK_KEY = "love:eventosUnlocked:v1";
-
-function isUnlocked(): boolean {
-  return sessionStorage.getItem(UNLOCK_KEY) === "1";
 }
 
 function renderSenhaNaoConfigurada(outlet: HTMLElement) {
@@ -90,8 +84,8 @@ function renderSenhaGate(outlet: HTMLElement) {
 
   form.addEventListener("submit", (ev) => {
     ev.preventDefault();
-    if (senha.input.value === CADASTRO_SENHA) {
-      sessionStorage.setItem(UNLOCK_KEY, "1");
+    if (checarSenha(senha.input.value)) {
+      unlock();
       renderCadastroForm(outlet);
       return;
     }
@@ -102,7 +96,7 @@ function renderSenhaGate(outlet: HTMLElement) {
 }
 
 export function renderCadastroOutlet(outlet: HTMLElement) {
-  if (!CADASTRO_SENHA) {
+  if (!senhaConfigurada()) {
     renderSenhaNaoConfigurada(outlet);
     return;
   }
