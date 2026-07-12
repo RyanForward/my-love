@@ -663,6 +663,7 @@ body {
 .cadastroPage .formRow input[type="date"],
 .cadastroPage .formRow input[type="time"],
 .cadastroPage .formRow input[type="number"],
+.cadastroPage .formRow input[type="password"],
 .cadastroPage .formRow textarea {
   background-color: rgba(0, 0, 0, 0.35);
   border-color: rgba(255, 255, 255, 0.15);
@@ -674,6 +675,7 @@ body {
 .formRow input[type="date"],
 .formRow input[type="time"],
 .formRow input[type="number"],
+.formRow input[type="password"],
 .formRow textarea {
   width: 100%;
   padding: 10px 12px;
@@ -682,6 +684,12 @@ body {
   background: rgba(0, 0, 0, 0.35);
   color: var(--text);
   font: inherit;
+}
+
+.formError {
+  margin: 0;
+  font-size: 13px;
+  color: #ff9a9a;
 }
 
 .formRow input[type="file"] {

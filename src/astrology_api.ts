@@ -84,11 +84,11 @@ export async function fetchWesternHoroscope(payload: WesternHoroscopeRequest): P
   };
 
   if (!import.meta.env.DEV) {
-    const uid = String(import.meta.env.VITE_ASTROLOGY_USER_ID ?? "").trim();
-    const key = String(import.meta.env.VITE_ASTROLOGY_API_KEY ?? "").trim();
+    const uid = String(import.meta.env.ASTROLOGY_USER_ID ?? "").trim();
+    const key = String(import.meta.env.ASTROLOGY_API_KEY ?? "").trim();
     if (!uid || !key) {
       throw new Error(
-        "Defina VITE_ASTROLOGY_USER_ID e VITE_ASTROLOGY_API_KEY (painel AstrologyAPI: User Id + Api Key).",
+        "Defina ASTROLOGY_USER_ID e ASTROLOGY_API_KEY (painel AstrologyAPI: User Id + Api Key).",
       );
     }
     headers.Authorization = westernHoroscopeAuthHeader(uid, key);

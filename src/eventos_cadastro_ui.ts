@@ -28,7 +28,92 @@ function readFileAsDataURL(file: File): Promise<string> {
   });
 }
 
+const CADASTRO_SENHA = String(import.meta.env.VITE_EVENTOS_PASSWORD ?? "").trim();
+const UNLOCK_KEY = "love:eventosUnlocked:v1";
+
+function isUnlocked(): boolean {
+  return sessionStorage.getItem(UNLOCK_KEY) === "1";
+}
+
+function renderSenhaNaoConfigurada(outlet: HTMLElement) {
+  outlet.innerHTML = "";
+  outlet.className = "scene scene--cadastro";
+
+  const wrap = document.createElement("div");
+  wrap.className = "cadastroPage";
+  const title = document.createElement("h2");
+  title.className = "eventsTitle cadastroTitle";
+  title.textContent = "Cadastro de evento";
+  const msg = document.createElement("p");
+  msg.className = "eventsIntro";
+  msg.textContent = "Defina VITE_EVENTOS_PASSWORD nas variáveis de ambiente para habilitar o cadastro.";
+  wrap.append(title, msg);
+  outlet.appendChild(wrap);
+}
+
+function renderSenhaGate(outlet: HTMLElement) {
+  outlet.innerHTML = "";
+  outlet.className = "scene scene--cadastro";
+
+  const wrap = document.createElement("div");
+  wrap.className = "cadastroPage";
+
+  const title = document.createElement("h2");
+  title.className = "eventsTitle cadastroTitle";
+  title.textContent = "Senha necessária";
+
+  const form = document.createElement("form");
+  form.className = "cadastroForm";
+
+  const senha = inputRow("Senha", "password", "senhaCadastro", true);
+
+  const erro = document.createElement("p");
+  erro.className = "formError";
+  erro.hidden = true;
+  erro.textContent = "Senha incorreta.";
+
+  const actions = document.createElement("div");
+  actions.className = "formActions";
+  const submitBtn = document.createElement("button");
+  submitBtn.type = "submit";
+  submitBtn.className = "btnPrimary";
+  submitBtn.textContent = "Entrar";
+  const cancel = document.createElement("a");
+  cancel.href = "#/eventos";
+  cancel.className = "btnSecondary btnSecondary--link";
+  cancel.textContent = "Cancelar";
+  actions.append(submitBtn, cancel);
+
+  form.append(senha.row, erro, actions);
+  wrap.append(title, form);
+  outlet.appendChild(wrap);
+
+  form.addEventListener("submit", (ev) => {
+    ev.preventDefault();
+    if (senha.input.value === CADASTRO_SENHA) {
+      sessionStorage.setItem(UNLOCK_KEY, "1");
+      renderCadastroForm(outlet);
+      return;
+    }
+    erro.hidden = false;
+    senha.input.value = "";
+    senha.input.focus();
+  });
+}
+
 export function renderCadastroOutlet(outlet: HTMLElement) {
+  if (!CADASTRO_SENHA) {
+    renderSenhaNaoConfigurada(outlet);
+    return;
+  }
+  if (isUnlocked()) {
+    renderCadastroForm(outlet);
+    return;
+  }
+  renderSenhaGate(outlet);
+}
+
+function renderCadastroForm(outlet: HTMLElement) {
   outlet.innerHTML = "";
   outlet.className = "scene scene--cadastro";
 
