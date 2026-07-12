@@ -30,6 +30,8 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_EVENTOS_PASSWORD: ${{ secrets.VITE_EVENTOS_PASSWORD }}
+          VITE_ASTROLOGY_USER_ID: ${{ secrets.VITE_ASTROLOGY_USER_ID }}
+          VITE_ASTROLOGY_API_KEY: ${{ secrets.VITE_ASTROLOGY_API_KEY }}
       - name: Verificar artefatos
         run: test -f dist/index.html && test -f dist/favicon.ico && test "$(find dist/assets -name '*.jpg' 2>/dev/null | wc -l)" -gt 20
       - uses: actions/configure-pages@v5
